@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>남양주 체육시설 휴무일 조회</title>
+<style>
+  :root {
+    --paper: #eef3f2;
+    --paper-raised: #ffffff;
+    --ink: #10262b;
+    --ink-soft: #3f5a5c;
+    --accent: #0e7490;
+    --accent-soft: #d9edf0;
+    --line: #c7d6d4;
+    --line-strong: #9db4b1;
+    --open-bg: #e2f4e8;
+    --open-fg: #1f7a41;
+    --closed-bg: #fbe4e1;
+    --closed-fg: #b83a26;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0b1c20;
+      --paper-raised: #102a2f;
+      --ink: #e7f1f0;
+      --ink-soft: #9fb9b8;
+      --accent: #5fd3e3;
+      --accent-soft: #143138;
+      --line: #23444a;
+      --line-strong: #335458;
+      --open-bg: #123626;
+      --open-fg: #6fd696;
+      --closed-bg: #3b1e1a;
+      --closed-fg: #f0897a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    line-height: 1.6;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+  .updated {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .date-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  input[type="date"] {
+    font-size: 16px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    color: var(--ink);
+    flex: 1;
+  }
+  .today-btn {
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line-strong);
+    background: var(--paper-raised);
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .today-btn:hover { background: var(--accent-soft); }
+  .weekday {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .out-of-range {
+    font-size: 13px;
+    color: var(--closed-fg);
+    background: var(--closed-bg);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+  }
+  ul.centers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  li.center {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .center-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .center-name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .pill {
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 3px 11px;
+    border-radius: 999px;
+    flex: none;
+  }
+  .pill.open { background: var(--open-bg); color: var(--open-fg); }
+  .pill.closed { background: var(--closed-bg); color: var(--closed-fg); }
+  .center-note {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .center-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    margin-top: 6px;
+    display: inline-block;
+  }
+  footer {
+    margin-top: 32px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>남양주 체육시설 휴무일 조회</h1>
+  <div class="updated" id="updated"></div>
+
+  <div class="date-row">
+    <input type="date" id="datePicker">
+    <button class="today-btn" id="todayBtn">오늘</button>
+  </div>
+  <div class="weekday" id="weekday"></div>
+  <div class="out-of-range" id="outOfRange" style="display:none"></div>
+
+  <ul class="centers" id="centerList"></ul>
+
+  <footer>남양주 체육문화센터 휴무일 통합 조회 · 매달 직접 확인해 업데이트합니다</footer>
+</div>
+
+<script>
+// ── 휴관일 데이터: 매달 초 9개 센터 공지사항을 직접 읽고 이 부분을 고쳐 쓴다 ──
+const HOLIDAYS = {
+  "updatedAt": "2026-07-12",
+  "month": "2026-07",
+  "centers": [
+    {
+      "id": "nyj",
+      "name": "남양주체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/nyj/333",
+      "closedDates": ["2026-07-05", "2026-07-19"],
+      "closedRanges": [],
+      "note": "7/17(금) 제헌절은 09:00~17:00 단축 운영, 프로그램 강습 없음"
+    },
+    {
+      "id": "hp",
+      "name": "호평체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/hp/394",
+      "closedDates": [],
+      "closedRanges": [{ "start": "2026-07-01", "end": "2026-07-31" }],
+      "note": "전기 승압공사로 7월 전체 휴관(수영장·헬스장·스피닝 등 모든 시설). 8월부터 재개"
+    },
+    {
+      "id": "on",
+      "name": "오남체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/on/437",
+      "closedDates": ["2026-07-05", "2026-07-19"],
+      "closedRanges": [],
+      "note": "7/17(금) 법정공휴일은 자유수영·일일헬스만 09:00~17:00 운영"
+    },
+    {
+      "id": "hd",
+      "name": "화도체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/hd/483",
+      "closedDates": ["2026-07-12", "2026-07-26"],
+      "closedRanges": [],
+      "note": ""
+    },
+    {
+      "id": "bn",
+      "name": "별내커뮤니티센터",
+      "noticeUrl": "https://www.ncuc.or.kr/bn/614",
+      "closedDates": ["2026-07-05", "2026-07-19"],
+      "closedRanges": [],
+      "note": "2·4번째 일요일(7/12, 7/26)과 7/17(금)은 유료 자유수영만 운영, 강습 없음"
+    },
+    {
+      "id": "wb",
+      "name": "와부체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/wb/525",
+      "closedDates": ["2026-07-12", "2026-07-26"],
+      "closedRanges": [],
+      "note": "7/17(금) 제헌절은 일일 자유수영만 09:00~17:00 운영, 강습 없음"
+    },
+    {
+      "id": "pn",
+      "name": "평내체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/pn/2668",
+      "closedDates": ["2026-07-12", "2026-07-26"],
+      "closedRanges": [],
+      "note": ""
+    },
+    {
+      "id": "jj",
+      "name": "진접체육문화센터",
+      "noticeUrl": "https://www.ncuc.or.kr/jj/571",
+      "closedDates": ["2026-07-12", "2026-07-26"],
+      "closedRanges": [],
+      "note": "원 공지 이미지가 서버에서 깨져 있어 센터 개요 페이지 기준으로 기록"
+    },
+    {
+      "id": "eco",
+      "name": "에코수영장",
+      "noticeUrl": "https://www.ncuc.or.kr/eco/667",
+      "closedDates": ["2026-07-12", "2026-07-26"],
+      "closedRanges": [],
+      "note": "7/17(금) 제헌절은 자유수영 운영(1부 9~11시/2부 12~14시/3부 15~17시)"
+    }
+  ]
+};
+// ── 데이터 끝 ──
+
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+function isClosed(center, dateStr) {
+  if (center.closedDates.includes(dateStr)) return true;
+  return center.closedRanges.some(function (r) {
+    return dateStr >= r.start && dateStr <= r.end;
+  });
+}
+
+function render(dateStr) {
+  const d = new Date(dateStr + "T00:00:00");
+  document.getElementById("weekday").textContent =
+    dateStr + " (" + WEEKDAYS[d.getDay()] + "요일)";
+
+  const [y, m] = dateStr.split("-");
+  const dataMonth = HOLIDAYS.month;
+  const selMonth = y + "-" + m;
+  const outEl = document.getElementById("outOfRange");
+  if (selMonth !== dataMonth) {
+    outEl.style.display = "block";
+    outEl.textContent =
+      "선택한 날짜(" + selMonth + ")는 데이터가 있는 " + dataMonth +
+      " 범위 밖이에요. 아래 결과는 참고용이며, 해당 월 공지를 다시 확인해서 데이터를 갱신해야 정확해요.";
+  } else {
+    outEl.style.display = "none";
+  }
+
+  const list = document.getElementById("centerList");
+  list.innerHTML = "";
+  HOLIDAYS.centers.forEach(function (c) {
+    const closed = isClosed(c, dateStr);
+    const li = document.createElement("li");
+    li.className = "center";
+    li.innerHTML =
+      '<div class="center-top">' +
+        '<span class="center-name">' + c.name + '</span>' +
+        '<span class="pill ' + (closed ? "closed" : "open") + '">' + (closed ? "휴무" : "운영") + '</span>' +
+      '</div>' +
+      (c.note ? '<div class="center-note">' + c.note + '</div>' : '') +
+      '<a class="center-link" href="' + c.noticeUrl + '" target="_blank" rel="noopener">공지 원문 보기 →</a>';
+    list.appendChild(li);
+  });
+}
+
+function todayStr() {
+  const d = new Date();
+  const pad = function (n) { return String(n).padStart(2, "0"); };
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+}
+
+const picker = document.getElementById("datePicker");
+document.getElementById("updated").textContent =
+  "마지막 확인일: " + HOLIDAYS.updatedAt + " (" + HOLIDAYS.month + " 기준 데이터)";
+
+picker.value = todayStr();
+render(picker.value);
+
+picker.addEventListener("change", function () {
+  if (picker.value) render(picker.value);
+});
+document.getElementById("todayBtn").addEventListener("click", function () {
+  picker.value = todayStr();
+  render(picker.value);
+});
+</script>
+</body>
+</html>
