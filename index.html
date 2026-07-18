@@ -22,6 +22,7 @@
     --open-bg: #e2f4e8;
     --closed-fg: #b83a26;
     --closed-bg: #fbe4e1;
+    --star-fg: #c8901a;
     --shadow: 0 1px 2px rgba(16, 38, 43, 0.05), 0 6px 16px rgba(16, 38, 43, 0.06);
   }
   @media (prefers-color-scheme: dark) {
@@ -42,6 +43,7 @@
       --open-bg: #123626;
       --closed-fg: #f0897a;
       --closed-bg: #3b1e1a;
+      --star-fg: #f0c352;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 20px rgba(0, 0, 0, 0.35);
     }
   }
@@ -205,9 +207,27 @@
   .summary-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
     flex: 1 1 auto;
+  }
+  .star-btn {
+    flex: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    margin: -2px;
+    font-size: 15px;
+    line-height: 1;
+    color: var(--line-strong);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .star-btn.is-fav { color: var(--star-fg); }
+  .star-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-radius: 4px;
   }
   .center-name {
     font-size: 13.5px;
@@ -499,6 +519,22 @@ const HOLIDAYS = {
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
+// ── 즐겨찾기: 브라우저에 저장되어 다음에 열어도 유지된다 ──
+const FAV_KEY = "ncucFavoriteCenters";
+function loadFavorites() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(FAV_KEY) || "[]"));
+  } catch (e) {
+    return new Set();
+  }
+}
+function saveFavorites(set) {
+  try {
+    localStorage.setItem(FAV_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) { /* 저장 실패해도 페이지는 계속 동작 */ }
+}
+const favorites = loadFavorites();
+
 function isClosed(center, dateStr) {
   if (center.closedDates.includes(dateStr)) return true;
   return center.closedRanges.some(function (r) {
@@ -535,20 +571,33 @@ function render(dateStr) {
   // 2열 구간은 세로 줄 수가 많아져 다 펼치면 오히려 스크롤이 생기므로 접힌 상태를 유지한다.
   const defaultOpen = window.matchMedia("(min-width: 920px)").matches;
 
+  // 정렬: 즐겨찾기 먼저, 그다음 운영 중인 곳, 그 안에서는 원래 순서 유지
+  const rows = HOLIDAYS.centers.map(function (c) {
+    return { c: c, closed: isClosed(c, dateStr), fav: favorites.has(c.id) };
+  });
+  rows.sort(function (a, b) {
+    if (a.fav !== b.fav) return a.fav ? -1 : 1;
+    if (a.closed !== b.closed) return a.closed ? 1 : -1;
+    return 0;
+  });
+
   const list = document.getElementById("centerList");
   list.innerHTML = "";
   let openCount = 0;
-  HOLIDAYS.centers.forEach(function (c) {
-    const closed = isClosed(c, dateStr);
+  rows.forEach(function (row) {
+    const c = row.c;
+    const closed = row.closed;
+    const fav = row.fav;
     if (!closed) openCount++;
     const times = (c.freeSwim && c.freeSwim[dayKey]) || [];
     const chips = times.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join("");
     const li = document.createElement("li");
-    li.className = "center " + (closed ? "is-closed" : "is-open");
+    li.className = "center " + (closed ? "is-closed" : "is-open") + (fav ? " is-fav" : "");
     li.innerHTML =
       '<details' + (defaultOpen ? " open" : "") + '>' +
         '<summary>' +
           '<span class="summary-left">' +
+            '<button type="button" class="star-btn' + (fav ? " is-fav" : "") + '" data-id="' + c.id + '" aria-label="즐겨찾기 ' + (fav ? "해제" : "추가") + '" aria-pressed="' + fav + '">' + (fav ? "★" : "☆") + '</button>' +
             '<span class="center-name">' + c.name + '</span>' +
           '</span>' +
           '<span class="pill ' + (closed ? "closed" : "open") + '">' + (closed ? "휴무" : "운영") + '</span>' +
@@ -587,6 +636,17 @@ picker.addEventListener("change", function () {
 });
 document.getElementById("todayBtn").addEventListener("click", function () {
   picker.value = todayStr();
+  render(picker.value);
+});
+
+document.getElementById("centerList").addEventListener("click", function (e) {
+  const btn = e.target.closest(".star-btn");
+  if (!btn) return;
+  e.preventDefault();  // <details> 토글 방지
+  e.stopPropagation();
+  const id = btn.dataset.id;
+  if (favorites.has(id)) favorites.delete(id); else favorites.add(id);
+  saveFavorites(favorites);
   render(picker.value);
 });
 
