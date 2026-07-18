@@ -290,6 +290,17 @@
   @media (max-width: 380px) {
     .wrap { padding-left: 12px; padding-right: 12px; }
   }
+
+  /* ── wider screens: spread the list across columns instead of stacking tall ── */
+  @media (min-width: 640px) {
+    .wrap { max-width: 760px; }
+    .control-card { max-width: 420px; }
+    ul.centers { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  }
+  @media (min-width: 920px) {
+    .wrap { max-width: 1000px; }
+    ul.centers { grid-template-columns: repeat(3, 1fr); }
+  }
 </style>
 </head>
 <body>
