@@ -571,13 +571,13 @@ function render(dateStr) {
   // 2열 구간은 세로 줄 수가 많아져 다 펼치면 오히려 스크롤이 생기므로 접힌 상태를 유지한다.
   const defaultOpen = window.matchMedia("(min-width: 920px)").matches;
 
-  // 정렬: 즐겨찾기 먼저, 그다음 운영 중인 곳, 그 안에서는 원래 순서 유지
+  // 정렬: 운영 중인 곳이 먼저, 휴무는 항상 아래. 그 안에서는 즐겨찾기가 위로.
   const rows = HOLIDAYS.centers.map(function (c) {
     return { c: c, closed: isClosed(c, dateStr), fav: favorites.has(c.id) };
   });
   rows.sort(function (a, b) {
-    if (a.fav !== b.fav) return a.fav ? -1 : 1;
     if (a.closed !== b.closed) return a.closed ? 1 : -1;
+    if (a.fav !== b.fav) return a.fav ? -1 : 1;
     return 0;
   });
 
