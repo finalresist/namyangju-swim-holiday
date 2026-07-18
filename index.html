@@ -65,7 +65,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
   h1 {
     font-size: 16px;
@@ -89,8 +89,8 @@
     border: 1px solid var(--line);
     border-radius: 12px;
     box-shadow: var(--shadow);
-    padding: 8px;
-    margin-bottom: 8px;
+    padding: 7px;
+    margin-bottom: 6px;
   }
   .date-row {
     display: flex;
@@ -169,7 +169,8 @@
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 5px;
+    align-items: start;
+    gap: 4px;
   }
   li.center {
     position: relative;
@@ -234,47 +235,47 @@
   .pill.closed { background: var(--closed-bg); color: var(--closed-fg); }
 
   .center-detail {
-    padding: 0 12px 12px 15px;
+    padding: 0 12px 9px 15px;
   }
   .center-note {
-    font-size: 12px;
+    font-size: 11.5px;
     color: var(--ink-soft);
-    line-height: 1.5;
-    margin-bottom: 8px;
+    line-height: 1.4;
+    margin-bottom: 6px;
   }
 
   .swim-block { }
   .swim-label {
     display: block;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 800;
     color: var(--accent);
     letter-spacing: 0.03em;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
   .swim-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
   }
   .chip {
-    font-size: 12px;
+    font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
     background: var(--accent-soft);
     color: var(--ink);
     border: 1px solid var(--accent-soft-line);
-    border-radius: 7px;
-    padding: 3px 8px;
+    border-radius: 6px;
+    padding: 2px 7px;
     white-space: nowrap;
   }
 
   .center-link {
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--accent);
     text-decoration: none;
-    margin-top: 10px;
+    margin-top: 6px;
     display: inline-block;
   }
   .center-link:hover { text-decoration: underline; }
@@ -295,7 +296,7 @@
   @media (min-width: 640px) {
     .wrap { max-width: 760px; }
     .control-card { max-width: 420px; }
-    ul.centers { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    ul.centers { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   }
   @media (min-width: 920px) {
     .wrap { max-width: 1000px; }
@@ -530,6 +531,9 @@ function render(dateStr) {
   }
 
   const dayKey = swimDayKey(dateStr, d.getDay());
+  // 3열로 배치될 만큼 넓은 화면(가로 920px 이상)에서만 기본으로 다 펼쳐서 보여준다.
+  // 2열 구간은 세로 줄 수가 많아져 다 펼치면 오히려 스크롤이 생기므로 접힌 상태를 유지한다.
+  const defaultOpen = window.matchMedia("(min-width: 920px)").matches;
 
   const list = document.getElementById("centerList");
   list.innerHTML = "";
@@ -542,7 +546,7 @@ function render(dateStr) {
     const li = document.createElement("li");
     li.className = "center " + (closed ? "is-closed" : "is-open");
     li.innerHTML =
-      '<details>' +
+      '<details' + (defaultOpen ? " open" : "") + '>' +
         '<summary>' +
           '<span class="summary-left">' +
             '<span class="center-name">' + c.name + '</span>' +
@@ -584,6 +588,16 @@ picker.addEventListener("change", function () {
 document.getElementById("todayBtn").addEventListener("click", function () {
   picker.value = todayStr();
   render(picker.value);
+});
+
+// 창 크기가 3열 기준선을 넘나들면 펼침 기본값을 다시 맞춘다.
+let wasWide = window.matchMedia("(min-width: 920px)").matches;
+window.addEventListener("resize", function () {
+  const isWide = window.matchMedia("(min-width: 920px)").matches;
+  if (isWide !== wasWide) {
+    wasWide = isWide;
+    render(picker.value);
+  }
 });
 </script>
 </body>
