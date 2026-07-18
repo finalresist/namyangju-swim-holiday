@@ -8,93 +8,154 @@
   :root {
     --paper: #eef3f2;
     --paper-raised: #ffffff;
+    --paper-sunken: #e4ece9;
     --ink: #10262b;
-    --ink-soft: #3f5a5c;
+    --ink-soft: #4c6567;
+    --ink-faint: #7c9391;
     --accent: #0e7490;
+    --accent-ink: #ffffff;
     --accent-soft: #d9edf0;
-    --line: #c7d6d4;
-    --line-strong: #9db4b1;
-    --open-bg: #e2f4e8;
+    --accent-soft-line: #b9d9de;
+    --line: #d3ddd8;
+    --line-strong: #a9bcb7;
     --open-fg: #1f7a41;
-    --closed-bg: #fbe4e1;
+    --open-bg: #e2f4e8;
     --closed-fg: #b83a26;
+    --closed-bg: #fbe4e1;
+    --shadow: 0 1px 2px rgba(16, 38, 43, 0.05), 0 6px 16px rgba(16, 38, 43, 0.06);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --paper: #0b1c20;
       --paper-raised: #102a2f;
+      --paper-sunken: #0e2429;
       --ink: #e7f1f0;
       --ink-soft: #9fb9b8;
+      --ink-faint: #6c8b89;
       --accent: #5fd3e3;
+      --accent-ink: #06272c;
       --accent-soft: #143138;
+      --accent-soft-line: #1c4750;
       --line: #23444a;
       --line-strong: #335458;
-      --open-bg: #123626;
       --open-fg: #6fd696;
-      --closed-bg: #3b1e1a;
+      --open-bg: #123626;
       --closed-fg: #f0897a;
+      --closed-bg: #3b1e1a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 20px rgba(0, 0, 0, 0.35);
     }
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; min-width: 0; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
     background: var(--paper);
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
-    line-height: 1.6;
+    line-height: 1.55;
+    overflow-x: hidden;
   }
   .wrap {
     max-width: 640px;
     margin: 0 auto;
-    padding: 40px 20px 80px;
+    padding: 32px 18px 72px;
+  }
+  header.top {
+    margin-bottom: 20px;
   }
   h1 {
-    font-size: 22px;
-    margin: 0 0 6px;
+    font-size: clamp(19px, 5vw, 23px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+    text-wrap: balance;
   }
   .updated {
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    margin-bottom: 24px;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  /* ── date control card ── */
+  .control-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 14px;
+    margin: 20px 0 18px;
   }
   .date-row {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
+    align-items: stretch;
+    gap: 8px;
   }
   input[type="date"] {
+    font: inherit;
     font-size: 16px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
+    padding: 10px 10px;
+    border-radius: 9px;
     border: 1px solid var(--line-strong);
-    background: var(--paper-raised);
+    background: var(--paper-sunken);
     color: var(--ink);
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
+    -webkit-appearance: none;
+  }
+  input[type="date"]:focus-visible,
+  .today-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
   }
   .today-btn {
     font-size: 13px;
+    font-weight: 700;
     padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--line-strong);
-    background: var(--paper-raised);
+    border-radius: 9px;
+    border: 1px solid var(--accent-soft-line);
+    background: var(--accent-soft);
     color: var(--accent);
     cursor: pointer;
+    flex: none;
+    white-space: nowrap;
   }
-  .today-btn:hover { background: var(--accent-soft); }
+  .today-btn:hover { filter: brightness(1.05); }
+  .weekday-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
   .weekday {
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin-bottom: 24px;
+    font-size: 15px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
+  .summary {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .summary strong { color: var(--open-fg); font-weight: 700; }
+
   .out-of-range {
-    font-size: 13px;
+    display: flex;
+    gap: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
     color: var(--closed-fg);
     background: var(--closed-bg);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 20px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
   }
+  .out-of-range .mark { flex: none; font-weight: 800; }
+
+  /* ── center cards ── */
   ul.centers {
     list-style: none;
     margin: 0;
@@ -103,11 +164,26 @@
     gap: 10px;
   }
   li.center {
+    position: relative;
+    overflow: hidden;
     background: var(--paper-raised);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 14px 16px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 13px 14px 13px 17px;
   }
+  li.center::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+  }
+  li.center.is-open::before { background: var(--open-fg); }
+  li.center.is-closed::before { background: var(--closed-fg); opacity: .55; }
+  li.center.is-closed .center-name,
+  li.center.is-closed .center-note,
+  li.center.is-closed .center-link { opacity: .6; }
+
   .center-top {
     display: flex;
     align-items: center;
@@ -116,60 +192,102 @@
   }
   .center-name {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 700;
   }
   .pill {
-    font-size: 12.5px;
-    font-weight: 700;
-    padding: 3px 11px;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding: 3px 10px;
     border-radius: 999px;
     flex: none;
   }
   .pill.open { background: var(--open-bg); color: var(--open-fg); }
   .pill.closed { background: var(--closed-bg); color: var(--closed-fg); }
+
   .center-note {
     font-size: 12.5px;
     color: var(--ink-soft);
-    margin-top: 6px;
+    margin-top: 5px;
+    line-height: 1.5;
   }
-  .center-swim {
-    font-size: 12.5px;
-    color: var(--ink);
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px dashed var(--line);
+
+  .swim-block {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
   }
-  .center-swim .label {
+  .swim-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
     color: var(--accent);
-    font-weight: 700;
-    margin-right: 6px;
+    letter-spacing: 0.03em;
+    margin-bottom: 6px;
   }
+  .swim-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    background: var(--accent-soft);
+    color: var(--ink);
+    border: 1px solid var(--accent-soft-line);
+    border-radius: 7px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
   .center-link {
     font-size: 12px;
+    font-weight: 600;
     color: var(--accent);
     text-decoration: none;
-    margin-top: 6px;
+    margin-top: 10px;
     display: inline-block;
   }
+  .center-link:hover { text-decoration: underline; }
+
   footer {
-    margin-top: 32px;
-    font-size: 12px;
-    color: var(--ink-soft);
+    margin-top: 28px;
+    font-size: 11.5px;
+    color: var(--ink-faint);
     text-align: center;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 380px) {
+    .wrap { padding-left: 14px; padding-right: 14px; }
+    li.center { padding-left: 15px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>남양주 체육시설 휴무일 조회</h1>
-  <div class="updated" id="updated"></div>
+  <header class="top">
+    <h1>남양주 체육시설 휴무일 조회</h1>
+    <div class="updated" id="updated"></div>
+  </header>
 
-  <div class="date-row">
-    <input type="date" id="datePicker">
-    <button class="today-btn" id="todayBtn">오늘</button>
+  <div class="control-card">
+    <div class="date-row">
+      <input type="date" id="datePicker">
+      <button class="today-btn" id="todayBtn">오늘</button>
+    </div>
+    <div class="weekday-row">
+      <span class="weekday" id="weekday"></span>
+      <span class="summary" id="summary"></span>
+    </div>
   </div>
-  <div class="weekday" id="weekday"></div>
-  <div class="out-of-range" id="outOfRange" style="display:none"></div>
+
+  <div class="out-of-range" id="outOfRange" style="display:none">
+    <span class="mark">!</span>
+    <span id="outOfRangeText"></span>
+  </div>
 
   <ul class="centers" id="centerList"></ul>
 
@@ -366,8 +484,8 @@ function render(dateStr) {
   const selMonth = y + "-" + m;
   const outEl = document.getElementById("outOfRange");
   if (selMonth !== dataMonth) {
-    outEl.style.display = "block";
-    outEl.textContent =
+    outEl.style.display = "flex";
+    document.getElementById("outOfRangeText").textContent =
       "선택한 날짜(" + selMonth + ")는 데이터가 있는 " + dataMonth +
       " 범위 밖이에요. 아래 결과는 참고용이며, 해당 월 공지를 다시 확인해서 데이터를 갱신해야 정확해요.";
   } else {
@@ -378,11 +496,14 @@ function render(dateStr) {
 
   const list = document.getElementById("centerList");
   list.innerHTML = "";
+  let openCount = 0;
   HOLIDAYS.centers.forEach(function (c) {
     const closed = isClosed(c, dateStr);
+    if (!closed) openCount++;
     const times = (c.freeSwim && c.freeSwim[dayKey]) || [];
+    const chips = times.map(function (t) { return '<span class="chip">' + t + '</span>'; }).join("");
     const li = document.createElement("li");
-    li.className = "center";
+    li.className = "center " + (closed ? "is-closed" : "is-open");
     li.innerHTML =
       '<div class="center-top">' +
         '<span class="center-name">' + c.name + '</span>' +
@@ -390,11 +511,14 @@ function render(dateStr) {
       '</div>' +
       (c.note ? '<div class="center-note">' + c.note + '</div>' : '') +
       (!closed && times.length
-        ? '<div class="center-swim"><span class="label">자유수영</span>' + times.join(" · ") + '</div>'
+        ? '<div class="swim-block"><span class="swim-label">자유수영</span><div class="swim-chips">' + chips + '</div></div>'
         : '') +
       '<a class="center-link" href="' + c.noticeUrl + '" target="_blank" rel="noopener">공지 원문 보기 →</a>';
     list.appendChild(li);
   });
+
+  document.getElementById("summary").innerHTML =
+    "전체 " + HOLIDAYS.centers.length + "곳 중 <strong>" + openCount + "곳 운영</strong>";
 }
 
 function todayStr() {
